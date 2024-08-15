@@ -1,8 +1,10 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import route from "./routes/userRoute.js";
 import axios from "axios";
+
+import userRoute from "./routes/usersRoute.js";
+import communityRoute from "./routes/communitiesRoute.js";
 
 const app = express();
 app.use(express.json());
@@ -45,4 +47,5 @@ mongoose
     console.log(err);
   });
 
-app.use("/api/user", route);
+app.use("/api/user", userRoute);
+app.use("/api/communities", communityRoute);
