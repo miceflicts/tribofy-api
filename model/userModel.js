@@ -46,7 +46,7 @@ const userSchema = new mongoose.Schema(
       {
         communityId: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Community",
+          ref: "communities",
         },
         name: String,
         role: {
@@ -79,6 +79,6 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model("users", userSchema);
 
 export default User;
