@@ -1,10 +1,16 @@
 import express from "express";
-import { create, fetch } from "../controller/communitiesController.js";
+import {
+  create,
+  fetch,
+  update,
+  deleteCommunity,
+} from "../controller/communitiesController.js";
 
-console.log("registered");
 const communityRoute = express.Router();
 
 communityRoute.post("/create", create);
 communityRoute.get("/getAllCommunities", fetch);
+communityRoute.put("/update/:id", update);
+communityRoute.delete("/delete/:id", deleteCommunity);
 
 export default communityRoute;

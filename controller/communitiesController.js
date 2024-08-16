@@ -27,3 +27,36 @@ export const fetch = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const update = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const communityExist = await Community.findOne({ _id: id });
+
+    if (!communityExist) {
+      return res.status(404).json({ message: "Community not found" });
+    }
+    const updateCommunity = await Community.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
+    res.status(200).json(updateCommunity);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const deleteCommunity = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const communityExist = await Community.findOne({ _id: id });
+
+    if (!communityExist) {
+      return res.status(404).json({ message: "Community not found" });
+    }
+
+    const deleteCommunity = await Community.findByIdAndDelete(id);
+    res.status(200).json(deleteCommunity);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
