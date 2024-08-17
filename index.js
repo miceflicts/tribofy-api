@@ -5,6 +5,8 @@ import axios from "axios";
 
 import userRoute from "./routes/usersRoute.js";
 import communityRoute from "./routes/communitiesRoute.js";
+import postRoute from "./routes/postsRoute.js";
+import categoriesRouter from "./routes/categoriesRoute.js";
 
 const app = express();
 app.use(express.json());
@@ -49,3 +51,5 @@ mongoose
 
 app.use("/api/user", userRoute);
 app.use("/api/communities", communityRoute);
+app.use("/api/posts", postRoute);
+app.use("/api/categories", categoriesRouter);

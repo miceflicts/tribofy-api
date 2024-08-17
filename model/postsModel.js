@@ -29,6 +29,10 @@ const postSchema = new mongoose.Schema(
       ref: "categories",
       required: true,
     },
+    isEdited: {
+      type: Boolean,
+      default: false,
+    },
     tags: [
       {
         type: String,
