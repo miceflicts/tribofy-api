@@ -4,11 +4,13 @@ import {
   fetch,
   update,
   deleteCommunity,
+  checkIfCommunityExists,
 } from "../controller/communitiesController.js";
 
 const communityRoute = express.Router();
 
 communityRoute.post("/create", create);
+communityRoute.post("/checkIfCommunityExists", checkIfCommunityExists);
 communityRoute.get("/getAllCommunities", fetch);
 communityRoute.put("/update/:id", update);
 communityRoute.delete("/delete/:id", deleteCommunity);

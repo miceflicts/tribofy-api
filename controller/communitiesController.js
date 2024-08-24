@@ -1,62 +1,168 @@
 import Community from "../model/communitiesModel.js";
+import { isValidObjectId } from "mongoose";
 
 export const create = async (req, res) => {
   try {
-    const communityData = new Community(req.body);
-    const { name } = communityData;
+    const { name, slug } = req.body;
 
-    const community = await Community.findOne({ name });
-
-    if (community) {
-      return res
-        .status(400)
-        .json({ message: "There is already a community with this name" });
+    if (!name || !slug) {
+      return res.status(400).json({ message: "Missing required fields" });
     }
+
+    const existingCommunity = await Community.findOne({
+      $or: [{ name }, { slug }],
+    });
+
+    if (existingCommunity) {
+      if (existingCommunity.name === name && existingCommunity.slug === slug) {
+        return res.status(400).json({
+          message: "There is already a community with this name and url link",
+        });
+      } else if (existingCommunity.name === name) {
+        return res
+          .status(400)
+          .json({ message: "There is already a community with this name" });
+      } else {
+        return res
+          .status(400)
+          .json({ message: "There is already a community with this url link" });
+      }
+    }
+
+    const communityData = new Community(req.body);
     const savedCommunity = await communityData.save();
-    res.status(200).json(savedCommunity);
+
+    res.status(201).json(savedCommunity);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error creating community:", error);
+    res.status(500).json({ message: error.message });
   }
 };
 
 export const fetch = async (req, res) => {
   try {
-    const communities = await Community.find();
-    res.status(200).json(communities);
+    const { page = 1, limit = 10, sort = "-createdAt" } = req.query;
+
+    const pageNumber = parseInt(page);
+    const limitNumber = parseInt(limit);
+
+    if (
+      isNaN(pageNumber) ||
+      isNaN(limitNumber) ||
+      pageNumber < 1 ||
+      limitNumber < 1
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Invalid page or limit parameters" });
+    }
+
+    const skip = (pageNumber - 1) * limitNumber;
+
+    const totalDocs = await Community.countDocuments();
+
+    const communities = await Community.find()
+      .sort(sort)
+      .skip(skip)
+      .limit(limitNumber);
+
+    const totalPages = Math.ceil(totalDocs / limitNumber);
+
+    const result = {
+      communities,
+      currentPage: pageNumber,
+      totalPages,
+      totalDocs,
+      hasNextPage: pageNumber < totalPages,
+      hasPrevPage: pageNumber > 1,
+    };
+
+    res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error fetching communities:", error);
+    res.status(500).json({ message: error.message });
   }
 };
 
 export const update = async (req, res) => {
   try {
-    const id = req.params.id;
-    const communityExist = await Community.findOne({ _id: id });
+    const { id } = req.params;
 
-    if (!communityExist) {
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid community ID" });
+    }
+
+    const updatedCommunity = await Community.findOneAndUpdate(
+      { _id: id },
+      req.body,
+      { new: true }
+    );
+
+    if (!updatedCommunity) {
       return res.status(404).json({ message: "Community not found" });
     }
-    const updateCommunity = await Community.findByIdAndUpdate(id, req.body, {
-      new: true,
-    });
-    res.status(200).json(updateCommunity);
+
+    res.status(200).json(updatedCommunity);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error updating community:", error);
+    res.status(500).json({ message: error.message });
   }
 };
 
 export const deleteCommunity = async (req, res) => {
   try {
-    const id = req.params.id;
-    const communityExist = await Community.findOne({ _id: id });
+    const { id } = req.params;
 
-    if (!communityExist) {
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid community ID" });
+    }
+
+    const deletedCommunity = await Community.findOneAndDelete({ _id: id });
+
+    if (!deletedCommunity) {
       return res.status(404).json({ message: "Community not found" });
     }
 
-    const deleteCommunity = await Community.findByIdAndDelete(id);
-    res.status(200).json(deleteCommunity);
+    res.status(200).json(deletedCommunity);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error deleting community:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const checkIfCommunityExists = async (req, res) => {
+  try {
+    const { name, slug } = req.body;
+
+    if (!name || !slug) {
+      return res
+        .status(400)
+        .json({ message: "Missing required fields, name and slug" });
+    }
+
+    const existingCommunity = await Community.findOne({
+      $or: [{ name }, { slug }],
+    });
+
+    if (existingCommunity) {
+      if (existingCommunity.name === name && existingCommunity.slug === slug) {
+        return res.status(400).json({
+          message: "There is already a community with this name and url link",
+        });
+      } else if (existingCommunity.name === name) {
+        return res
+          .status(400)
+          .json({ message: "There is already a community with this name" });
+      } else {
+        return res
+          .status(400)
+          .json({ message: "There is already a community with this url link" });
+      }
+    }
+
+    res.status(200).json({ message: "Community name and slug are available" });
+  } catch (error) {
+    console.error("Error checking community existence:", error);
+    res.status(500).json({ message: error.message });
   }
 };
