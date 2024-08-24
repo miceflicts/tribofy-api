@@ -1,5 +1,5 @@
 import User from "../model/usersModel.js";
-import Bcrypt from "bcrypt";
+import bcrypt from "bcrypt";
 
 const generateUsername = async (firstName, lastName) => {
   const baseUsername =

@@ -27,11 +27,13 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
       maxlength: [50, "First name cannot exceed 50 characters"],
+      required: [true, "First name is required"],
     },
     lastName: {
       type: String,
       trim: true,
       maxlength: [50, "Last name cannot exceed 50 characters"],
+      required: [true, "Last name is required"],
     },
     profilePicture: {
       type: String,
@@ -41,6 +43,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
       maxlength: [500, "Bio cannot exceed 500 characters"],
+      default: "",
     },
     communities: [
       {
