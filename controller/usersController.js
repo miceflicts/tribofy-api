@@ -1,15 +1,53 @@
 import User from "../model/usersModel.js";
 
+const generateUsername = async (firstName, lastName) => {
+  const baseUsername =
+    `${firstName.toLowerCase()}${lastName.toLowerCase()}`.replace(/\s/g, "");
+  let username = baseUsername;
+  let counter = 1;
+
+  while (await User.findOne({ username })) {
+    username = `${baseUsername}-${Math.floor(Math.random() * 1000)}`;
+    counter++;
+    if (counter > 10) {
+      // If we've tried 10 times, use a longer random number to reduce collision probability
+      username = `${baseUsername}-${Math.floor(Math.random() * 1000000)}`;
+    }
+  }
+
+  return username;
+};
+
 export const create = async (req, res) => {
   try {
-    const userData = new User(req.body);
-    const { email } = userData;
+    const { firstName, lastName, email, username } = req.body;
 
-    const user = await User.findOne({ email });
-
-    if (user) {
-      return res.status(400).json({ message: "User already exists" });
+    // Check if email already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res
+        .status(400)
+        .json({ message: "User with this email already exists" });
     }
+
+    let finalUsername;
+    if (username !== undefined && username.length > 0) {
+      // Check if the provided username already exists
+      const existingUsername = await User.findOne({ username });
+      if (existingUsername) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+      finalUsername = username;
+    } else {
+      // Generate a username if not provided
+      finalUsername = await generateUsername(firstName, lastName);
+    }
+
+    const userData = new User({
+      ...req.body,
+      username: finalUsername,
+    });
+
     const savedUser = await userData.save();
     res.status(200).json(savedUser);
   } catch (error) {
