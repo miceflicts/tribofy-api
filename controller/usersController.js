@@ -1,4 +1,5 @@
 import User from "../model/usersModel.js";
+import Bcrypt from "bcrypt";
 
 const generateUsername = async (firstName, lastName) => {
   const baseUsername =
@@ -20,9 +21,9 @@ const generateUsername = async (firstName, lastName) => {
 
 export const create = async (req, res) => {
   try {
-    const { firstName, lastName, email, username } = req.body;
+    const { firstName, lastName, email, username, password } = req.body;
 
-    // Check if email already exists
+    // Verifica se o email já existe
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res
@@ -32,24 +33,34 @@ export const create = async (req, res) => {
 
     let finalUsername;
     if (username !== undefined && username.length > 0) {
-      // Check if the provided username already exists
+      // Verifica se o username fornecido já existe
       const existingUsername = await User.findOne({ username });
       if (existingUsername) {
         return res.status(400).json({ message: "Username already exists" });
       }
       finalUsername = username;
     } else {
-      // Generate a username if not provided
+      // Gera um username se não for fornecido
       finalUsername = await generateUsername(firstName, lastName);
     }
+
+    // Encripta a senha
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const userData = new User({
       ...req.body,
       username: finalUsername,
+      password: hashedPassword, // Substitui a senha plana pela senha encriptada
     });
 
     const savedUser = await userData.save();
-    res.status(200).json(savedUser);
+
+    // Remove a senha do objeto de resposta por segurança
+    const userResponse = savedUser.toObject();
+    delete userResponse.password;
+
+    res.status(200).json(userResponse);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
