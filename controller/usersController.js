@@ -2,6 +2,9 @@ import User from "../model/usersModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
+import Community from "../model/communitiesModel.js";
+import mongoose from "mongoose";
+
 const generateUsername = async (firstName, lastName) => {
   const baseUsername =
     `${firstName.toLowerCase()}${lastName.toLowerCase()}`.replace(/\s/g, "");
@@ -18,6 +21,72 @@ const generateUsername = async (firstName, lastName) => {
   }
 
   return username;
+};
+
+export const joinCommunity = async (req, res) => {
+  // Start a atomic transaction, to avoid race conditions
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const { userId, communityId } = req.body;
+
+    // Check if user and community exist
+    const user = await User.findById(userId).session(session);
+    const community = await Community.findById(communityId).session(session);
+
+    if (!user || !community) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({ message: "User or Community not found" });
+    }
+
+    // Check if user is already a member of the community
+    if (
+      user.communities.some(
+        (comm) => comm.communityId.toString() === communityId
+      )
+    ) {
+      await session.abortTransaction();
+      session.endSession();
+      return res
+        .status(400)
+        .json({ message: "User is already a member of this community" });
+    }
+
+    // Add community to user's communities
+    user.communities.push({
+      communityId: community._id,
+      name: community.name,
+      role: "member",
+      joinedAt: new Date(),
+      lastActive: new Date(),
+    });
+
+    // Add user to community's members
+    community.members.push(user._id);
+
+    // Increment totalMembers in community stats
+    community.stats.totalMembers += 1;
+
+    // Save changes
+    await user.save({ session });
+    await community.save({ session });
+
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    res.status(200).json({
+      message: "User successfully joined the community",
+      user,
+      community,
+    });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    res.status(500).json({ error: error.message });
+  }
 };
 
 export const create = async (req, res) => {
@@ -110,11 +179,23 @@ export const login = async (req, res) => {
 
 export const fetch = async (req, res) => {
   try {
-    const users = await User.find();
-    if (users.length === 0) {
-      return res.status(404).json({ message: "No users found" });
+    const { id } = req.body;
+
+    if (id) {
+      // If an ID is provided, find the specific user
+      const user = await User.findById(id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      return res.status(200).json(user);
+    } else {
+      // If no ID is provided, fetch all users
+      const users = await User.find();
+      if (users.length === 0) {
+        return res.status(404).json({ message: "No users found" });
+      }
+      return res.status(200).json(users);
     }
-    res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -148,6 +229,26 @@ export const deleteUser = async (req, res) => {
 
     const deleteUser = await User.findByIdAndDelete(id);
     res.status(200).json(deleteUser);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const isInCommunity = async (req, res) => {
+  try {
+    const { userId, communityId } = req.body;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const isInCommunity = user.communities.some(
+      (community) => community.communityId.toString() === communityId
+    );
+
+    res.status(200).json({ isInCommunity });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

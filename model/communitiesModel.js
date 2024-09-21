@@ -129,6 +129,14 @@ communitySchema.virtual("url").get(function () {
   return `/community/${this.slug}`;
 });
 
+// Pre-save hook para atualizar o total de membros
+communitySchema.pre("save", function (next) {
+  if (this.isModified("members")) {
+    this.stats.totalMembers = this.members.length;
+  }
+  next();
+});
+
 const Community = mongoose.model("communities", communitySchema);
 
 export default Community;
