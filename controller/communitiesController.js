@@ -41,8 +41,28 @@ export const create = async (req, res) => {
 
 export const fetch = async (req, res) => {
   try {
-    const { page = 1, limit = 10, sort = "-createdAt" } = req.query;
+    const { page = 1, limit = 10, sort = "-createdAt", id, slug } = req.query;
 
+    // If id or slug is provided, fetch a specific community
+    if (id || slug) {
+      let community;
+      if (id) {
+        if (!isValidObjectId(id)) {
+          return res.status(400).json({ message: "Invalid community ID" });
+        }
+        community = await Community.findById(id);
+      } else {
+        community = await Community.findOne({ slug });
+      }
+
+      if (!community) {
+        return res.status(404).json({ message: "Community not found" });
+      }
+
+      return res.status(200).json(community);
+    }
+
+    // If no id or slug is provided, fetch all communities with pagination
     const pageNumber = parseInt(page);
     const limitNumber = parseInt(limit);
 

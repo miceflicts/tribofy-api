@@ -11,7 +11,7 @@ const communityRoute = express.Router();
 
 communityRoute.post("/create", create);
 communityRoute.post("/checkIfCommunityExists", checkIfCommunityExists);
-communityRoute.get("/discoverCommunities", fetch);
+communityRoute.get("/fetchCommunities", fetch);
 communityRoute.put("/update/:id", update);
 communityRoute.delete("/delete/:id", deleteCommunity);
 
