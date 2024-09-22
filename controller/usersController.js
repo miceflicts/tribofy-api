@@ -236,7 +236,7 @@ export const deleteUser = async (req, res) => {
 
 export const isInCommunity = async (req, res) => {
   try {
-    const { userId, communityId } = req.params;
+    const { userId, communityId } = req.query;
 
     const user = await User.findById(userId);
 
