@@ -10,7 +10,7 @@ import {
 const postRoute = express.Router();
 
 postRoute.post("/create", create);
-postRoute.get("/getAllPosts", fetch);
+postRoute.get("/getPosts", fetch);
 postRoute.put("/update/", update);
 postRoute.put("/incrementViews/:id", incrementViews);
 postRoute.delete("/delete/:id", deletePost);
