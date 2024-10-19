@@ -176,12 +176,30 @@ export const addComment = async (req, res) => {
       authorLastName: user.lastName,
       content,
       createdAt: new Date(),
+      likes: [], // Inicializando o array de likes vazio
     };
 
     post.comments.push(comment);
     await post.save();
 
-    res.status(201).json({ message: "Comment added", comment });
+    // Obtendo o comentário recém-adicionado com seu ID gerado
+    const addedComment = post.comments[post.comments.length - 1];
+
+    // Criando um objeto de resposta com o ID do comentário
+    const responseComment = {
+      _id: addedComment._id, // Este é o ID gerado pelo MongoDB
+      author: addedComment.author,
+      authorUsername: addedComment.authorUsername,
+      authorFirstName: addedComment.authorFirstName,
+      authorLastName: addedComment.authorLastName,
+      content: addedComment.content,
+      createdAt: addedComment.createdAt,
+      likes: addedComment.likes, // Array vazio de likes
+    };
+
+    res
+      .status(201)
+      .json({ message: "Comment added", comment: responseComment });
   } catch (error) {
     console.error("Error adding comment:", error);
     res.status(500).json({ message: error.message });
