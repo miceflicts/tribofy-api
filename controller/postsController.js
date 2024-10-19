@@ -1,4 +1,5 @@
 import Post from "../model/postsModel.js";
+import User from "../model/usersModel.js";
 import { isValidObjectId } from "mongoose";
 
 export const create = async (req, res) => {
@@ -155,13 +156,24 @@ export const addComment = async (req, res) => {
       return res.status(400).json({ message: "Invalid ID provided" });
     }
 
-    const post = await Post.findById(postId);
+    const [post, user] = await Promise.all([
+      Post.findById(postId),
+      User.findById(author),
+    ]);
+
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
 
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     const comment = {
-      author,
+      author: user._id,
+      authorUsername: user.username,
+      authorFirstName: user.firstName,
+      authorLastName: user.lastName,
       content,
       createdAt: new Date(),
     };

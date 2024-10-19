@@ -51,6 +51,18 @@ const postSchema = new mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId,
           ref: "users",
         },
+        authorUsername: {
+          type: String,
+          required: true,
+        },
+        authorFirstName: {
+          type: String,
+          required: true,
+        },
+        authorLastName: {
+          type: String,
+          required: true,
+        },
         content: {
           type: String,
           required: true,
