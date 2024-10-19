@@ -31,8 +31,6 @@ export const fetch = async (req, res) => {
   try {
     const { community, page = 1, limit = 10, sort = "-createdAt" } = req.query;
 
-    /* sort=title ordem alfabética*/
-
     // Converte page e limit para números
     const pageNumber = parseInt(page);
     const limitNumber = parseInt(limit);
@@ -66,7 +64,7 @@ export const fetch = async (req, res) => {
       .sort(sort)
       .skip(skip)
       .limit(limitNumber)
-      .populate("author", "username")
+      .populate("author", "username firstName lastName") // Ajuste aqui para incluir os campos desejados
       .populate("category", "name");
 
     // Calcula o total de páginas
