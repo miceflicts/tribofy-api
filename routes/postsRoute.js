@@ -5,10 +5,19 @@ import {
   update,
   deletePost,
   incrementViews,
+} from "../controller/posts/postController.js";
+
+import {
   addComment,
   editComment,
   deleteComment,
-} from "../controller/postsController.js";
+} from "../controller/posts/commentsController.js";
+
+import {
+  addReply,
+  editReply,
+  deleteReply,
+} from "../controller/posts/repliesController.js";
 
 const postRoute = express.Router();
 
@@ -20,6 +29,10 @@ postRoute.delete("/delete/:id", deletePost);
 
 postRoute.post("/addComment", addComment);
 postRoute.put("/editComment", editComment);
-postRoute.delete("/deleteComment/:postId/:commentId", deleteComment);
+postRoute.delete("/deleteComment", deleteComment);
+
+postRoute.post("/addReply", addReply);
+postRoute.put("/editReply", editReply);
+postRoute.delete("/deleteReply", deleteReply);
 
 export default postRoute;

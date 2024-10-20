@@ -1,5 +1,84 @@
 import mongoose from "mongoose";
 
+const replySchema = new mongoose.Schema({
+  author: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "users",
+    required: true,
+  },
+  authorUsername: {
+    type: String,
+    required: true,
+  },
+  authorFirstName: {
+    type: String,
+    required: true,
+  },
+  authorLastName: {
+    type: String,
+    required: true,
+  },
+  content: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  isEdited: {
+    type: Boolean,
+    default: false,
+  },
+  likes: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "users",
+    },
+  ],
+});
+
+const commentSchema = new mongoose.Schema({
+  author: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "users",
+    required: true,
+  },
+  authorUsername: {
+    type: String,
+    required: true,
+  },
+  authorFirstName: {
+    type: String,
+    required: true,
+  },
+  authorLastName: {
+    type: String,
+    required: true,
+  },
+  content: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  isEdited: {
+    type: Boolean,
+    default: false,
+  },
+  replies: [replySchema],
+  likes: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "users",
+    },
+  ],
+});
+
 const postSchema = new mongoose.Schema(
   {
     title: {
@@ -45,41 +124,7 @@ const postSchema = new mongoose.Schema(
         ref: "users",
       },
     ],
-    comments: [
-      {
-        author: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "users",
-        },
-        authorUsername: {
-          type: String,
-          required: true,
-        },
-        authorFirstName: {
-          type: String,
-          required: true,
-        },
-        authorLastName: {
-          type: String,
-          required: true,
-        },
-        content: {
-          type: String,
-          required: true,
-          trim: true,
-        },
-        createdAt: {
-          type: Date,
-          default: Date.now,
-        },
-        likes: [
-          {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "users",
-          },
-        ],
-      },
-    ],
+    comments: [commentSchema],
     status: {
       type: String,
       enum: ["draft", "published", "archived"],
@@ -107,5 +152,4 @@ postSchema.index({ community: 1, category: 1, createdAt: -1 });
 postSchema.index({ author: 1, createdAt: -1 });
 
 const Post = mongoose.model("posts", postSchema);
-
 export default Post;
