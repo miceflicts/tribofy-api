@@ -2,7 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import axios from "axios";
-import cors from "cors";
+// import cors from "cors"; // Removido o import do cors
 
 import userRoute from "./routes/usersRoute.js";
 import communityRoute from "./routes/communitiesRoute.js";
@@ -18,26 +18,35 @@ const MONGOURL = process.env.MONGO_URL;
 const url = "https://tribofy-api.onrender.com/api/user/getAllUsers";
 const interval = 840000;
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",")
-  : ["http://localhost:3000"]; // Fallback para desenvolvimento local
+// const allowedOrigins = process.env.ALLOWED_ORIGINS
+//   ? process.env.ALLOWED_ORIGINS.split(",")
+//   : ["http://localhost:3000"]; // Fallback para desenvolvimento local
 
-// Configuração do CORS
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-  optionsSuccessStatus: 200,
-};
+// // Configuração do CORS
+// const corsOptions = {
+//   origin: function (origin, callback) {
+//     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+//       callback(null, true);
+//     } else {
+//       console.log("Blocked origin:", origin); // Para debugging
+//       callback(new Error("Not allowed by CORS"));
+//     }
+//   },
+//   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//   allowedHeaders: ["Content-Type", "Authorization"],
+//   credentials: true,
+//   optionsSuccessStatus: 200,
+// };
 
-app.use(cors(corsOptions));
+// app.use(cors(corsOptions));
+
+// Usar o cors sem opções permitirá todas as origens
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*"); // Permite todas as origens
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  next();
+});
 
 function reloadWebsite() {
   axios
